@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPR Studio - Penjana One Page Report</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- html2pdf for PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        /* CSS Variables untuk Tema Berkualiti */
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary-color: #f8fafc;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --bg-body: #f1f5f9;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        /* Memastikan gambar foto sebenar kekal licin (smooth) dan tidak bergerigi/pecah */
+        img {
+            image-rendering: auto;
+        }
+
+        /* Ketajaman ekstra hanya difokuskan pada logo sahaja */
+        .tpl-logo-container img, .footer-logo {
+            image-rendering: high-quality;
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color: var(--white);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .navbar h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Layout Utama */
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        @media (min-width: 1024px) {
+            .container { flex-direction: row; align-items: flex-start; }
+        }
+
+        /* Form Section */
+        .form-section {
+            flex: 1;
+            background: var(--white);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            max-width: 100%;
+        }
+
+        .form-title {
+            font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem;
+            color: var(--text-main); border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;
+        }
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-main); }
+        
+        .form-control {
+            width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);
+            font-family: 'Inter', sans-serif; font-size: 0.95rem; transition: all 0.2s;
+        }
+        .form-control:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        textarea.form-control { min-height: 80px; resize: vertical; }
+
+        /* File Upload */
+        .file-upload-wrapper {
+            position: relative; border: 2px dashed var(--border-color); border-radius: var(--radius-md);
+            padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--secondary-color);
+        }
+        .file-upload-wrapper:hover { border-color: var(--primary-color); background: #eff6ff; }
+        .file-upload-wrapper input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .file-upload-text { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* Button Grid */
+        .button-group { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem; }
+        .btn {
+            padding: 0.75rem 1.5rem; border-radius: var(--radius-md); font-weight: 600; font-size: 1rem;
+            cursor: pointer; text-align: center; transition: background 0.2s, transform 0.1s; border: none;
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background-color: var(--primary-color); color: var(--white); }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+
+        /* AI Button */
+        .btn-ai {
+            background: linear-gradient(135deg, #8b5cf6, #d946ef);
+            color: white; border: none; box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.3);
+            font-size: 0.9rem; padding: 0.5rem 1rem; margin: 0; border-radius: 20px;
+        }
+        .btn-ai:hover { background: linear-gradient(135deg, #7c3aed, #c026d3); transform: translateY(-2px); box-shadow: 0 6px 8px -1px rgba(139, 92, 246, 0.4); }
+
+        /* Template Selector */
+        .template-selector { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .template-option {
+            flex: 1; min-width: 100px; padding: 0.75rem 0.5rem; border: 2px solid var(--border-color);
+            border-radius: var(--radius-md); text-align: center; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s;
+        }
+        .template-option.active { border-color: var(--primary-color); background-color: #eff6ff; color: var(--primary-color); }
+
+        /* Preview Section */
+        .preview-section { flex: 1.2; display: flex; flex-direction: column; align-items: center; overflow-x: auto; padding-bottom: 2rem; }
+        
+        /* A4 Paper Styling - Flexbox for full stretch */
+        .a4-paper {
+            width: 210mm; 
+            height: 296.5mm; 
+            max-height: 296.5mm; 
+            background: var(--white); box-shadow: var(--shadow-lg);
+            position: relative; transform-origin: top center; overflow: hidden; 
+            display: flex; flex-direction: column; box-sizing: border-box;
+        }
+
+        @media (max-width: 1024px) { .a4-paper { margin-left: auto; margin-right: auto; } }
+
+        /* --------------------------
+           GAYA LOGO TETAP (HEADER KPM/PPD)
+           -------------------------- */
+        .tpl-logo-container {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: transparent; flex-shrink: 0; z-index: 20;
+            padding: 5px 0; /* Beri sedikit ruang atas/bawah */
+        }
+        .tpl-logo-container img { max-height: 100px; width: auto; max-width: 100%; margin-bottom: 0; object-fit: contain; }
+        .tpl-logo-container .logo-text {
+            font-family: Arial, sans-serif; font-size: 5.5pt; font-weight: 500;
+            text-align: center; color: #fff; line-height: 1.2; letter-spacing: 0.5px; 
+            margin-top: -14px; /* Dinaikkan sedikit lagi supaya lebih rapat */
+            padding-bottom: 5px; /* Halang teks dari bergesel dengan garisan bawah */
+        }
+
+        /* --------------------------
+           TEMPLATE 1: Korporat Digital (Gradient & Elegan)
+           -------------------------- */
+        .tpl-1 { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; padding: 0; }
+        .tpl-1 .corp-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e40af 50%, #0ea5e9 100%); color: white; 
+            padding: 15px 20px; /* Padding lebih fleksibel */
+            min-height: 130px; /* Ketinggian minimum yang seimbang */
+            text-align: center; border-bottom: 5px solid #38bdf8; position: relative; overflow: hidden;
+            display: flex; align-items: center; justify-content: center; gap: 20px;
+        }
+        .tpl-1 .corp-header::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 20px 20px; pointer-events: none; opacity: 0.5;
+        }
+        .tpl-1 .tpl-logo-container { max-width: 350px; }
+        .tpl-1 .corp-title { font-size: 26pt; font-weight: 900; letter-spacing: 2px; margin: 0; text-transform: uppercase; text-shadow: 0 4px 6px rgba(0,0,0,0.3); position: relative; z-index: 2;}
+        .tpl-1 .corp-unit { font-size: 10pt; color: #bae6fd; font-weight: 500; letter-spacing: 3px; margin-top: 8px; text-transform: uppercase; position: relative; z-index: 2; line-height: 1.4;}
+        
+        .tpl-1 .corp-body { padding: 20px 30px 10px 30px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+        .tpl-1 .corp-card {
+            background: white; border-radius: 10px; padding: 15px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.025);
+            border-left: 5px solid #2563eb; position: relative; flex: 1; display: flex; flex-direction: column;
+        }
+        .tpl-1 .corp-grid { display: flex; gap: 15px; width: 100%; flex: 1; align-items: stretch; }
+        .tpl-1 .corp-grid > div { flex: 1; min-width: 0; }
+        
+        .tpl-1 .corp-section-title {
+            font-size: 10.5pt; font-weight: 800; color: #1e40af; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .tpl-1 .corp-section-title::after { content: ''; height: 2px; flex-grow: 1; background: linear-gradient(90deg, #e2e8f0, transparent); }
+        
+        .tpl-1 .corp-text { font-size: 9.5pt; line-height: 1.5; color: #475569; flex: 1; }
+        .tpl-1 .corp-text ul { padding-left: 20px; margin: 5px 0; }
+        .tpl-1 .corp-text li { margin-bottom: 4px; }
+        
+        .tpl-1 .corp-info-row { display: flex; margin-bottom: 5px; font-size: 9.5pt; align-items: flex-start;}
+        .tpl-1 .corp-info-label { font-weight: 700; width: 90px; color: #0f172a; flex-shrink: 0;}
+        .tpl-1 .corp-info-val { color: #334155; font-weight: 500; }
+        
+        .tpl-1 .corp-images { 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); grid-auto-rows: 1fr;
+            gap: 10px; justify-content: center; flex: 1.2; min-height: 140px; align-items: stretch; 
+        }
+        .tpl-1 .corp-img-wrapper { width: 100%; height: 100%; border-radius: 8px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); background: #f1f5f9; }
+        .tpl-1 .corp-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+        .tpl-1 .corp-footer { font-size: 9pt; color: #64748b; text-align: right; border-top: 1px solid #e2e8f0; padding-top: 8px; margin-top: auto; }
+
+        /* --------------------------
+           TEMPLATE 2: Komik Aksi (Bold, Kontra, Shadow Keras)
+           -------------------------- */
+        .tpl-2 { 
+            padding: 15mm; font-family: 'Arial Black', Impact, sans-serif; background-color: #fef08a; 
+            background-image: radial-gradient(#fbbf24 15%, transparent 16%), radial-gradient(#fbbf24 15%, transparent 16%);
+            background-size: 20px 20px; background-position: 0 0, 10px 10px;
+        }
+        .tpl-2 .comic-container { background: white; border: 5px solid #000; padding: 20px; box-shadow: 10px 10px 0px #000; display: flex; flex-direction: column; flex: 1; position: relative; }
+        .tpl-2 .comic-header {
+            background: #ef4444; color: white; padding: 15px 20px; border: 4px solid #000; transform: rotate(-2deg);
+            margin: -10px -10px 20px -10px; box-shadow: 6px 6px 0px #000; text-align: center; position: relative; z-index: 10;
+            display: flex; align-items: center; justify-content: center; gap: 20px; min-height: 130px;
+        }
+        .tpl-2 .tpl-logo-container { transform: rotate(3deg); max-width: 350px; }
+        .tpl-2 .comic-title {
+            font-size: 30pt; text-transform: uppercase; margin: 0; line-height: 1;
+            text-shadow: 3px 3px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; letter-spacing: 1px; color: #fde047;
+        }
+        .tpl-2 .comic-unit {
+            font-size: 10pt; background: white; color: #000; font-family: 'Inter', sans-serif; font-weight: 900; display: inline-block; padding: 4px 15px; 
+            border: 3px solid #000; transform: rotate(2deg); margin-top: 10px; box-shadow: 3px 3px 0px #000; text-transform: uppercase; line-height: 1.4;
+        }
+        .tpl-2 .comic-grid { display: flex; gap: 15px; flex: 1; align-items: stretch; }
+        .tpl-2 .comic-col { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        .tpl-2 .comic-panel { border: 4px solid #000; background: #fff; padding: 15px; box-shadow: 6px 6px 0px #000; position: relative; display: flex; flex-direction: column; flex: 1; }
+        .tpl-2 .comic-panel-title {
+            background: #3b82f6; color: #fff; border: 3px solid #000; display: inline-block; padding: 4px 12px; font-size: 10.5pt; font-family: 'Arial Black', sans-serif;
+            position: absolute; top: -16px; left: -10px; text-transform: uppercase; box-shadow: 4px 4px 0 #000; transform: rotate(-2deg); letter-spacing: 1px; text-shadow: 1px 1px 0 #000;
+        }
+        .tpl-2 .comic-panel-title.yellow { background: #eab308; color: #000; text-shadow: none;}
+        .tpl-2 .comic-text { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 9.5pt; line-height: 1.5; color: #111827; margin-top: 8px; flex: 1; }
+        .tpl-2 .comic-text ul { padding-left: 20px; margin: 5px 0; }
+        .tpl-2 .comic-info-item { display: flex; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 10pt; margin-bottom: 6px; border-bottom: 2px dashed #d1d5db; padding-bottom: 4px;}
+        .tpl-2 .comic-info-label { width: 80px; color: #ef4444; }
+        .tpl-2 .comic-images { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); grid-auto-rows: 1fr; gap: 12px; margin-top: 15px; flex: 1; }
+        .tpl-2 .comic-img-wrapper { width: 100%; height: 100%; min-height: 100px; border: 4px solid #000; box-shadow: 5px 5px 0px #000; background: #fff; }
+        .tpl-2 .comic-img-wrapper img { width: 100%; height: 100%; object-fit: cover; filter: contrast(1.1) saturate(1.2); }
+        .tpl-2 .comic-footer { text-align: right; font-family: 'Inter', sans-serif; font-weight: 800; font-size: 9pt; margin-top: auto; padding-top: 10px; }
+
+        /* --------------------------
+           TEMPLATE 3: Ceria & Kreatif (Vibrant Pastel)
+           -------------------------- */
+        .tpl-3 { font-family: 'Inter', sans-serif; background-color: #fae8ff; padding: 10mm; }
+        .tpl-3 .kreatif-container { background-color: #fdf4ff; border: 3px dashed #d946ef; border-radius: 12px; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; flex: 1; }
+        .tpl-3 .kreatif-header { 
+            background: linear-gradient(to bottom, #fbcfe8, #fce7f3); border-radius: 12px 12px 0 0; text-align: center; 
+            padding: 15px 15px; position: relative; margin: -15px -15px 15px -15px; border-bottom: 8px solid #f472b6; 
+            display: flex; align-items: center; justify-content: center; gap: 20px; min-height: 130px;
+        }
+        .tpl-3 .tpl-logo-container { background: #1e293b; border-radius: 10px; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 2px dashed #d946ef; max-width: 350px; }
+        .tpl-3 .header-title-k { color: #db2777; font-size: 30pt; font-weight: 900; margin: 0; text-transform: uppercase; text-shadow: 2px 2px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; letter-spacing: 1px; }
+        .tpl-3 .ribbon-wrapper { position: relative; margin: 12px 0 5px 0; text-align: center; z-index: 10; }
+        .tpl-3 .ribbon { background-color: #8b5cf6; color: white; display: inline-block; padding: 6px 25px; font-size: 14pt; font-weight: 800; position: relative; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .tpl-3 .ribbon::before, .tpl-3 .ribbon::after { content: ''; position: absolute; top: 8px; z-index: -1; border: 16px solid #5b21b6; }
+        .tpl-3 .ribbon::before { left: -25px; border-left-color: transparent; }
+        .tpl-3 .ribbon::after { right: -25px; border-right-color: transparent; }
+        .tpl-3 .yellow-pill { background-color: #fcd34d; color: #7c2d12; display: inline-block; padding: 3px 20px; border-radius: 20px; font-size: 12pt; font-weight: 800; margin-top: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-transform: uppercase; }
+        .tpl-3 .green-bar { background-color: #38bdf8; color: white; text-align: center; padding: 8px; font-size: 12pt; font-weight: 800; border-radius: 8px; margin-bottom: 15px; text-transform: uppercase; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .tpl-3 .main-grid { display: flex; gap: 15px; flex: 1; align-items: stretch; }
+        .tpl-3 .left-col { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+        .tpl-3 .right-col { flex: 1.4; display: flex; flex-direction: column; gap: 12px; }
+        .tpl-3 .info-box-k { background: white; border-radius: 12px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 9.5pt; }
+        .tpl-3 .info-item-k { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-start; }
+        .tpl-3 .info-item-k:last-child { margin-bottom: 0; }
+        .tpl-3 .icon-k { background: #fde047; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 13px; flex-shrink: 0; }
+        .tpl-3 .info-text-k b { color: #1f2937; display: block; font-size: 10pt; margin-bottom: 2px;}
+        .tpl-3 .info-text-k span { color: #4b5563; }
+        .tpl-3 .kreatif-card { background: white; border-radius: 12px; padding: 18px 12px 12px 12px; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; flex: 1; justify-content: center; }
+        .tpl-3 .kreatif-card-title { background-color: #0ea5e9; color: white; padding: 5px 18px; border-radius: 20px; font-weight: 800; font-size: 10.5pt; position: absolute; top: -14px; left: 15px; text-transform: uppercase; }
+        .tpl-3 .kreatif-content { font-size: 9.5pt; line-height: 1.5; color: #374151; white-space: pre-wrap; }
+        .tpl-3 .kreatif-content ul { padding-left: 20px; margin: 5px 0; }
+        .tpl-3 .kreatif-content li { margin-bottom: 3px; }
+        .tpl-3 .img-main-k { width: 100%; min-height: 130px; background: white; border-radius: 12px; padding: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; flex: 1; }
+        .tpl-3 .img-main-k img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; flex: 1; }
+        .tpl-3 .sub-images-k { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); grid-auto-rows: 1fr; gap: 8px; margin-top: 5px; }
+        .tpl-3 .img-sub-wrapper { height: 100%; min-height: 80px; background: white; border-radius: 12px; padding: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .tpl-3 .img-sub-wrapper img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+        .tpl-3 .disediakan-k { text-align: right; font-size: 8.5pt; color: #1f2937; padding-right: 10px; margin-top: 5px; }
+
+        /* --- Gaya CSS Untuk Footer Image/Text --- */
+        .tpl-footer-box {
+            display: none; /* Auto hidden kalau kosong */
+            width: 100%;
+        }
+        .footer-logo {
+            max-height: 75px; /* Dibesarkan sedikit */
+            width: auto; /* Mengelakkan logo daripada diregangkan (stretched) */
+            max-width: 95%;
+            object-fit: contain;
+            display: none; /* Auto hidden kalau tiada logo */
+            margin: 0 auto 8px auto; /* Kekalkan logo tepat di tengah */
+        }
+        
+        .tpl-1 .tpl-footer-box {
+            background: #f1f5f9;
+            color: #1e293b;
+            text-align: center;
+            padding: 10px 20px;
+            font-size: 8.5pt; font-weight: 600; letter-spacing: 0.5px;
+            border-top: 2px solid #e2e8f0;
+        }
+
+        .tpl-2 .tpl-footer-box {
+            background: #fff;
+            color: #000;
+            text-align: center;
+            padding: 12px 20px;
+            font-size: 9pt; font-family: 'Inter', sans-serif; font-weight: 800; text-transform: uppercase;
+            border-top: 4px solid #ef4444; margin: 15px -20px -20px -20px;
+        }
+
+        .tpl-3 .tpl-footer-box {
+            text-align: center; padding-top: 10px; margin-top: 15px;
+            border-top: 2px dashed #f472b6; color: #db2777; font-size: 9pt; font-weight: 700;
+        }
+
+        /* Toast Message */
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #10b981;
+            color: white; padding: 10px 20px; border-radius: 50px; font-weight: 500; box-shadow: var(--shadow-md);
+            opacity: 0; visibility: hidden; transition: all 0.3s; z-index: 100;
+        }
+        .toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(-10px); }
+
+        /* Print Specific */
+        @media print { .navbar, .form-section { display: none; } .preview-section { padding: 0; } .a4-paper { box-shadow: none; margin: 0; transform: scale(1); } body { background: white; } }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <h1>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            OPR Studio
+        </h1>
+    </nav>
+
+    <div class="container">
+        <!-- Form Section -->
+        <div class="form-section">
+            <h2 class="form-title">Butiran Laporan (OPR)</h2>
+
+            <div class="template-selector">
+                <div class="template-option active" onclick="setTemplate('tpl-1')" id="btn-tpl-1">Tpl 1 (Korporat)</div>
+                <div class="template-option" onclick="setTemplate('tpl-2')" id="btn-tpl-2">Tpl 2 (Komik)</div>
+                <div class="template-option" onclick="setTemplate('tpl-3')" id="btn-tpl-3">Tpl 3 (Ceria)</div>
+            </div>
+
+            <div class="form-group">
+                <label for="input-unit">Unit / Penganjur</label>
+                <select id="input-unit" class="form-control" oninput="updatePreview()">
+                    <option value="Unit Sumber dan Teknologi Maklumat">Unit Sumber dan Teknologi Maklumat</option>
+                    <option value="Unit Pemulihan Khas">Unit Pemulihan Khas</option>
+                    <option value="Unit Pendidikan Islam">Unit Pendidikan Islam</option>
+                    <option value="Unit Pendidikan Khas">Unit Pendidikan Khas</option>
+                    <option value="SISC+">SISC+</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="input-tajuk">Tajuk Program</label>
+                <input type="text" id="input-tajuk" class="form-control" placeholder="Contoh: Bengkel Pembestarian ICT / Program Jati Diri" oninput="updatePreview()">
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                <div class="form-group">
+                    <label for="input-tarikh-mula">Tarikh Mula</label>
+                    <input type="date" id="input-tarikh-mula" class="form-control" oninput="updatePreview()">
+                </div>
+                <div class="form-group">
+                    <label for="input-tarikh-tamat">Tarikh Tamat (Pilihan)</label>
+                    <input type="date" id="input-tarikh-tamat" class="form-control" oninput="updatePreview()">
+                </div>
+                <div class="form-group">
+                    <label for="input-masa">Masa</label>
+                    <input type="text" id="input-masa" class="form-control" placeholder="7.30 Pagi - 5.00 Petang" oninput="updatePreview()">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="input-tempat">Tempat</label>
+                <input type="text" id="input-tempat" class="form-control" placeholder="Bilik Seminar / Makmal Komputer" oninput="updatePreview()">
+            </div>
+
+            <hr style="border:0; border-top: 1px solid var(--border-color); margin: 2rem 0 1.5rem 0;">
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 10px;">
+                <p style="font-size: 0.85rem; color: #ef4444; font-weight: 500; margin: 0;">
+                    * Biarkan ruangan di bawah kosong jika tiada pengisian.
+                </p>
+                <button type="button" id="btn-ai" class="btn btn-ai" onclick="cadanganIsiAI()">✨ Cadangan Isi AI</button>
+            </div>
+
+            <div class="form-group">
+                <label for="input-objektif">Objektif</label>
+                <textarea id="input-objektif" class="form-control" placeholder="- Melahirkan pemimpin berwibawa&#10;- Memupuk semangat kerjasama dan disiplin..." oninput="updatePreview()"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="input-pencapaian">Pencapaian / Aktiviti</label>
+                <textarea id="input-pencapaian" class="form-control" placeholder="- Seramai 50 murid menyertai program ini&#10;- Modul latihan dan LDK berjalan lancar..." oninput="updatePreview()"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="input-impak">Impak Program</label>
+                <textarea id="input-impak" class="form-control" placeholder="- Tahap keyakinan murid untuk bercakap di hadapan awam meningkat..." oninput="updatePreview()"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="input-tindak">Cadangan Penambahbaikan (Tindak Susul)</label>
+                <textarea id="input-tindak" class="form-control" placeholder="- Mengadakan siri kedua untuk pemantapan kepimpinan pada bulan depan..." oninput="updatePreview()"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="input-refleksi">Refleksi</label>
+                <textarea id="input-refleksi" class="form-control" placeholder="- Program berjaya mencapai objektif yang ditetapkan dengan kerjasama semua guru..." oninput="updatePreview()"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="input-disediakan">Disediakan Oleh (Nama & Jawatan)</label>
+                <textarea id="input-disediakan" class="form-control" placeholder="Ahmad Bin Ali&#10;Setiausaha Program" style="min-height: 60px;" oninput="updatePreview()"></textarea>
+            </div>
+
+            <hr style="border:0; border-top: 1px solid var(--border-color); margin: 2rem 0 1.5rem 0;">
+
+            <div class="form-group">
+                <label>Muat Naik Gambar Laporan</label>
+                <div class="file-upload-wrapper">
+                    <input type="file" id="input-gambar" accept="image/*" multiple onchange="handleImages(event)">
+                    <div class="file-upload-text">
+                        <svg style="margin-bottom: 8px;" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg><br>
+                        Klik atau seret gambar ke sini<br>
+                        <small>(Pilih 1 hingga 6 gambar)</small>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: var(--bg-body); padding: 1.5rem; border-radius: var(--radius-md); margin-bottom: 2rem;">
+                <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-main);">Tetapan Footer / Penutup</h3>
+                <div class="form-group">
+                    <label for="input-footer-logo">Muat Naik Logo Footer (Cth: Logo Program / Kempen)</label>
+                    <input type="file" id="input-footer-logo" accept="image/*" class="form-control" onchange="handleFooterLogo(event)" style="padding: 0.5rem; cursor: pointer; background: white;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label for="input-footer">Nota Kaki / Teks Footer (Pilihan)</label>
+                    <textarea id="input-footer" class="form-control" placeholder="Cth: Cetakan janaan sistem OPR" style="min-height: 60px;" oninput="updatePreview()"></textarea>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" style="grid-column: span 2;" onclick="generatePDF()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Jana & Simpan PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="preview-section">
+            <div id="pdf-content" class="a4-paper tpl-1">
+                <!-- Kandungan Template akan dirender di sini oleh JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">PDF sedang dijana...</div>
+
+    <script>
+        let currentTemplate = 'tpl-1';
+        let uploadedImages = [];
+        let uploadedFooterLogo = null;
+
+        function formatTextWithBullets(text) {
+            if (!text) return '';
+            const lines = text.split('\n');
+            let isList = false;
+            let html = '';
+            
+            lines.forEach(line => {
+                if (line.trim().startsWith('-')) {
+                    if (!isList) { html += '<ul>'; isList = true; }
+                    html += `<li>${line.trim().substring(1).trim()}</li>`;
+                } else {
+                    if (isList) { html += '</ul>'; isList = false; }
+                    if (line.trim() !== '') { html += `<div>${line}</div>`; }
+                }
+            });
+            if (isList) html += '</ul>';
+            return html;
+        }
+
+        function formatTarikhBM(dateString) {
+            const parts = dateString.split('-');
+            if(parts.length === 3) {
+                const months = ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'];
+                return `${parseInt(parts[2])} ${months[parseInt(parts[1])-1]} ${parts[0]}`;
+            }
+            return dateString;
+        }
+
+        async function cadanganIsiAI() {
+            const tajukInput = document.getElementById('input-tajuk').value.trim();
+            
+            if (!tajukInput) {
+                showToast('⚠️ Sila masukkan Tajuk Program terlebih dahulu!');
+                document.getElementById('input-tajuk').focus();
+                return;
+            }
+
+            const btn = document.getElementById('btn-ai');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ Menjana Isi...';
+            btn.disabled = true;
+
+            try {
+                const apiKey = ""; 
+                const promptText = `Hasilkan butiran ringkas One Page Report (OPR) untuk program bertajuk: "${tajukInput}". 
+                Hasilkan dalam Bahasa Melayu. Berikan dalam bentuk point (mulakan dengan simbol -).
+                Pastikan isinya logik, berkualiti, dan sangat relevan dengan tajuk "${tajukInput}".
+                Setiap bahagian perlu ada 2 atau 3 point padat. Jangan masukkan nombor, hanya guna dash (-).`;
+
+                const requestBody = {
+                    contents: [{ parts: [{ text: promptText }] }],
+                    systemInstruction: { parts: [{ text: "Anda adalah pembantu AI yang pakar dalam menulis laporan ringkas dan berstruktur." }] },
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                objektif: { type: "STRING", description: "Objektif program, guna dash (-)" },
+                                pencapaian: { type: "STRING", description: "Pencapaian atau aktiviti program, guna dash (-)" },
+                                impak: { type: "STRING", description: "Impak program kepada peserta, guna dash (-)" },
+                                tindak_susul: { type: "STRING", description: "Cadangan penambahbaikan, guna dash (-)" },
+                                refleksi: { type: "STRING", description: "Refleksi keseluruhan, guna dash (-)" }
+                            }
+                        }
+                    }
+                };
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) throw new Error('API Error');
+                
+                const data = await response.json();
+                const textResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                const result = JSON.parse(textResponse);
+
+                document.getElementById('input-objektif').value = result.objektif || '';
+                document.getElementById('input-pencapaian').value = result.pencapaian || '';
+                document.getElementById('input-impak').value = result.impak || '';
+                document.getElementById('input-tindak').value = result.tindak_susul || '';
+                document.getElementById('input-refleksi').value = result.refleksi || '';
+
+            } catch (error) {
+                console.warn('API AI gagal, menggunakan cadangan asas statik...', error);
+                const tajuk = tajukInput.toLowerCase();
+                let obj, pen, imp, tin, ref;
+
+                if (tajuk.includes('sukan') || tajuk.includes('olahraga') || tajuk.includes('merentas') || tajuk.includes('bola')) {
+                    obj = "- Meningkatkan kecergasan fizikal dan mental murid\n- Memupuk semangat kesukanan dan daya saing yang sihat";
+                    pen = "- Penyertaan 100% daripada murid yang disasarkan\n- Acara berjalan lancar mengikut jadual";
+                    imp = "- Tahap kesihatan fizikal murid semakin meningkat\n- Semangat kerjasama berpasukan bertambah utuh";
+                    tin = "- Mengadakan latihan berterusan untuk wakil sekolah ke peringkat lebih tinggi";
+                    ref = "- Program sangat berjaya dan mencapai objektif utama. Sokongan ibu bapa amat memberangsangkan.";
+                } else if (tajuk.includes('kem') || tajuk.includes('kepimpinan') || tajuk.includes('pengawas') || tajuk.includes('motivasi')) {
+                    obj = "- Melahirkan barisan pemimpin pelajar yang berwibawa dan bertanggungjawab\n- Membina keyakinan diri semasa bercakap di khalayak ramai";
+                    pen = "- Semua peserta berjaya menamatkan modul latihan dengan jayanya\n- Peserta menunjukkan peningkatan kemahiran komunikasi";
+                    imp = "- Murid lebih berdisiplin dan proaktif dalam menjalankan tugas harian\n- Hubungan silaturahim antara barisan pemimpin bertambah erat";
+                    tin = "- Mengadakan sesi perjumpaan bulanan secara berkala untuk pemantauan";
+                    ref = "- Secara keseluruhan, program ini berjaya membentuk sahsiah terpuji dalam kalangan peserta.";
+                } else if (tajuk.includes('bengkel') || tajuk.includes('akademik') || tajuk.includes('teknik') || tajuk.includes('kecemerlangan') || tajuk.includes('seminar')) {
+                    obj = "- Mendedahkan teknik menjawab soalan peperiksaan dengan format yang tepat\n- Meningkatkan penguasaan murid dalam topik-topik sukar";
+                    pen = "- Peningkatan kefahaman murid terbukti melalui keputusan ujian pra dan pasca\n- Murid lebih fokus dan berani bersoal jawab";
+                    imp = "- Motivasi dan semangat murid untuk mengulangkaji pelajaran semakin tinggi\n- Peratus lulus peperiksaan percubaan dijangka akan melonjak";
+                    tin = "- Menyediakan lebih banyak modul latihan pengukuhan yang berterusan";
+                    ref = "- Objektif bengkel tercapai sepenuhnya. Penceramah cemerlang dan berjaya mengekalkan tumpuan murid.";
+                } else {
+                    obj = "- Meningkatkan pengetahuan dan kefahaman peserta terhadap program yang dianjurkan\n- Memperkasa kemahiran peserta secara holistik";
+                    pen = "- Program berjalan dengan lancar mengikut tentatif yang ditetapkan\n- Tahap kehadiran peserta amat memuaskan";
+                    imp = "- Peningkatan tahap kesedaran dan motivasi peserta ke tahap maksimum\n- Berlaku perubahan sikap ke arah yang positif";
+                    tin = "- Proses pemantauan berterusan akan dilaksanakan oleh pihak urus setia\n- Melaksanakan penambahbaikan berdasarkan maklum balas peserta";
+                    ref = "- Program secara keseluruhannya berjaya mencapai matlamat dan objektif. Kerjasama AJK amatlah dihargai.";
+                }
+
+                document.getElementById('input-objektif').value = obj;
+                document.getElementById('input-pencapaian').value = pen;
+                document.getElementById('input-impak').value = imp;
+                document.getElementById('input-tindak').value = tin;
+                document.getElementById('input-refleksi').value = ref;
+            }
+
+            updatePreview();
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            showToast('✨ Cadangan Isi AI berjaya dimuatkan!');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTemplate();
+            updatePreview();
+        });
+
+        function setTemplate(tpl) {
+            currentTemplate = tpl;
+            document.getElementById('btn-tpl-1').classList.remove('active');
+            document.getElementById('btn-tpl-2').classList.remove('active');
+            document.getElementById('btn-tpl-3').classList.remove('active');
+            document.getElementById(`btn-${tpl}`).classList.add('active');
+            
+            const pdfContent = document.getElementById('pdf-content');
+            pdfContent.className = `a4-paper ${tpl}`;
+            
+            renderTemplate();
+            updatePreview();
+        }
+
+        function handleImages(event) {
+            const files = event.target.files;
+            uploadedImages = [];
+            const maxFiles = Math.min(files.length, 6);
+
+            for (let i = 0; i < maxFiles; i++) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImages.push(e.target.result);
+                    if (uploadedImages.length === maxFiles) updateImagePreview();
+                };
+                reader.readAsDataURL(files[i]);
+            }
+            if(files.length === 0) updateImagePreview();
+        }
+
+        function handleFooterLogo(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedFooterLogo = e.target.result;
+                    updatePreview(); 
+                };
+                reader.readAsDataURL(file);
+            } else {
+                uploadedFooterLogo = null;
+                updatePreview();
+            }
+        }
+
+        function updateImagePreview() {
+            if (currentTemplate === 'tpl-3') {
+                const mainImg = document.getElementById('tpl-img-main');
+                const subImgContainer = document.getElementById('tpl-img-sub');
+                if(!mainImg || !subImgContainer) return;
+
+                mainImg.innerHTML = '';
+                subImgContainer.innerHTML = '';
+
+                if (uploadedImages.length === 0) {
+                    mainImg.innerHTML = '<div style="background:#e5e7eb; width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:#9ca3af; border-radius:8px;">Gambar Utama</div>';
+                    subImgContainer.style.display = 'grid';
+                    subImgContainer.innerHTML = `
+                        <div class="img-sub-wrapper"><div style="background:#e5e7eb; height:100%; display:flex; align-items:center; justify-content:center; color:#9ca3af; border-radius:8px;">Gambar 2</div></div>
+                        <div class="img-sub-wrapper"><div style="background:#e5e7eb; height:100%; display:flex; align-items:center; justify-content:center; color:#9ca3af; border-radius:8px;">Gambar 3</div></div>
+                    `;
+                    return;
+                }
+
+                const img1 = document.createElement('img');
+                img1.src = uploadedImages[0];
+                mainImg.appendChild(img1);
+
+                if (uploadedImages.length > 1) {
+                    subImgContainer.style.display = 'grid';
+                    for(let i=1; i<uploadedImages.length; i++) {
+                        const div = document.createElement('div');
+                        div.className = 'img-sub-wrapper';
+                        const img = document.createElement('img');
+                        img.src = uploadedImages[i];
+                        div.appendChild(img);
+                        subImgContainer.appendChild(div);
+                    }
+                } else {
+                    subImgContainer.style.display = 'none';
+                }
+            } else if (currentTemplate === 'tpl-2') {
+                const imgContainer = document.getElementById('tpl-images-container');
+                if(!imgContainer) return;
+                imgContainer.innerHTML = '';
+
+                if(uploadedImages.length === 0) {
+                    imgContainer.innerHTML = `
+                        <div class="comic-img-wrapper"><div style="background:#fef08a; height:100%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12pt; color:#b45309;">GAMBAR 1</div></div>
+                        <div class="comic-img-wrapper"><div style="background:#fef08a; height:100%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12pt; color:#b45309;">GAMBAR 2</div></div>
+                    `;
+                    return;
+                }
+
+                uploadedImages.forEach(src => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'comic-img-wrapper';
+                    const img = document.createElement('img');
+                    img.src = src;
+                    wrapper.appendChild(img);
+                    imgContainer.appendChild(wrapper);
+                });
+            } else {
+                const imgContainer = document.getElementById('tpl-images-container');
+                if(!imgContainer) return;
+                imgContainer.innerHTML = '';
+                
+                if(uploadedImages.length === 0) {
+                    imgContainer.innerHTML = `
+                        <div class="corp-img-wrapper"><div style="color:#94a3b8; text-align:center; height:100%; display:flex; align-items:center; justify-content:center;">Foto 1</div></div>
+                        <div class="corp-img-wrapper"><div style="color:#94a3b8; text-align:center; height:100%; display:flex; align-items:center; justify-content:center;">Foto 2</div></div>
+                    `;
+                    return;
+                }
+
+                uploadedImages.forEach(src => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'corp-img-wrapper';
+                    const img = document.createElement('img');
+                    img.src = src;
+                    wrapper.appendChild(img);
+                    imgContainer.appendChild(wrapper);
+                });
+            }
+        }
+
+        function updatePreview() {
+            const getValue = (id) => document.getElementById(id).value || '-';
+            const getHtmlValue = (id) => formatTextWithBullets(document.getElementById(id).value) || '-';
+            
+            const els = {
+                unit: document.getElementById('tpl-unit'),
+                tajuk: document.getElementById('tpl-tajuk'),
+                tarikh: document.getElementById('tpl-tarikh'),
+                masa: document.getElementById('tpl-masa'),
+                tempat: document.getElementById('tpl-tempat'),
+                objektif: document.getElementById('tpl-objektif'),
+                pencapaian: document.getElementById('tpl-pencapaian'),
+                impak: document.getElementById('tpl-impak'),
+                tindak: document.getElementById('tpl-tindak'),
+                refleksi: document.getElementById('tpl-refleksi'),
+                disediakan: document.getElementById('tpl-disediakan'),
+                footerBox: document.getElementById('tpl-footer'),
+                footerImg: document.getElementById('tpl-footer-logo'),
+                footerText: document.getElementById('tpl-footer-text')
+            };
+
+            if(els.unit) els.unit.innerText = getValue('input-unit').toUpperCase();
+            if(els.tajuk) els.tajuk.innerText = getValue('input-tajuk');
+            
+            if(els.tarikh) {
+                const tMula = document.getElementById('input-tarikh-mula').value;
+                const tTamat = document.getElementById('input-tarikh-tamat').value;
+                const fmtMula = tMula ? formatTarikhBM(tMula) : null;
+                const fmtTamat = tTamat ? formatTarikhBM(tTamat) : null;
+
+                if (fmtMula && fmtTamat) els.tarikh.innerText = `${fmtMula} - ${fmtTamat}`;
+                else if (fmtMula) els.tarikh.innerText = fmtMula;
+                else if (fmtTamat) els.tarikh.innerText = fmtTamat;
+                else els.tarikh.innerText = '-';
+            }
+
+            if(els.masa) els.masa.innerText = getValue('input-masa');
+            if(els.tempat) els.tempat.innerText = getValue('input-tempat');
+            
+            const valObj = document.getElementById('input-objektif').value.replace(/-/g, '').trim();
+            const valPen = document.getElementById('input-pencapaian').value.replace(/-/g, '').trim();
+            const valImp = document.getElementById('input-impak').value.replace(/-/g, '').trim();
+            const valTin = document.getElementById('input-tindak').value.replace(/-/g, '').trim();
+            const valRef = document.getElementById('input-refleksi').value.replace(/-/g, '').trim();
+
+            const wObj = document.getElementById('wrap-obj'); if(wObj) wObj.style.display = valObj ? '' : 'none';
+            const wPen = document.getElementById('wrap-pen'); if(wPen) wPen.style.display = valPen ? '' : 'none';
+            const wImp = document.getElementById('wrap-imp'); if(wImp) wImp.style.display = valImp ? '' : 'none';
+            const wRef = document.getElementById('wrap-ref'); if(wRef) wRef.style.display = (valTin || valRef) ? '' : 'none';
+            const wImpRef = document.getElementById('wrap-imp-ref'); if(wImpRef) wImpRef.style.display = (valImp || valTin || valRef) ? '' : 'none';
+
+            if(els.objektif) els.objektif.innerHTML = getHtmlValue('input-objektif');
+            if(els.pencapaian) els.pencapaian.innerHTML = getHtmlValue('input-pencapaian');
+            if(els.impak) els.impak.innerHTML = getHtmlValue('input-impak');
+            if(els.tindak) { const tText = getHtmlValue('input-tindak'); els.tindak.innerHTML = tText !== '-' ? tText : ''; }
+            if(els.refleksi) { const rText = getHtmlValue('input-refleksi'); els.refleksi.innerHTML = rText !== '-' ? rText : ''; }
+            
+            if(els.disediakan) {
+                const nama = document.getElementById('input-disediakan').value;
+                if(currentTemplate === 'tpl-3') {
+                     els.disediakan.innerHTML = nama ? `<b>Disediakan oleh:</b><br>${nama.replace(/\n/g, '<br>')}` : '';
+                } else if(currentTemplate === 'tpl-2') {
+                     els.disediakan.innerHTML = nama !== '' ? `Disediakan oleh:<br><span style="color:#ef4444">${nama.replace(/\n/g, '<br>')}</span>` : '';
+                } else {
+                     els.disediakan.innerHTML = nama !== '' ? `Disediakan oleh:<br><b>${nama.replace(/\n/g, '<br>')}</b>` : '';
+                }
+            }
+
+            // Update Footer Dynamically
+            if (els.footerBox) {
+                const footerTextContent = document.getElementById('input-footer').value.trim();
+                let hasFooter = false;
+
+                if (uploadedFooterLogo) {
+                    els.footerImg.src = uploadedFooterLogo;
+                    els.footerImg.style.display = 'block';
+                    hasFooter = true;
+                } else {
+                    els.footerImg.style.display = 'none';
+                    els.footerImg.src = '';
+                }
+
+                if (footerTextContent) {
+                    els.footerText.innerHTML = footerTextContent.replace(/\n/g, '<br>');
+                    els.footerText.style.display = 'block';
+                    hasFooter = true;
+                } else {
+                    els.footerText.style.display = 'none';
+                }
+
+                if (hasFooter) {
+                    els.footerBox.style.display = 'block';
+                } else {
+                    els.footerBox.style.display = 'none';
+                }
+            }
+        }
+
+        function renderTemplate() {
+            const container = document.getElementById('pdf-content');
+            
+            // Komponen Logo Header Kekal dengan tetapan `crossorigin="anonymous"` bagi mengelakkan isu PDF pecah.
+            const headerLogoComponent = `
+                <div class="tpl-logo-container">
+                    <img src="https://i.postimg.cc/SNnTnFmR/1-Logo-Korporat-KPM-BM-(Putih).png" crossorigin="anonymous" alt="Logo KPM">
+                    <div class="logo-text">PEJABAT PENDIDIKAN DAERAH DUNGUN</div>
+                </div>
+            `;
+            
+            if (currentTemplate === 'tpl-1') {
+                container.innerHTML = `
+                    <div class="corp-header">
+                        ${headerLogoComponent}
+                        <div style="flex: 1; text-align: center; min-width: 0;">
+                            <h1 class="corp-title">Laporan OPR</h1>
+                            <div class="corp-unit" id="tpl-unit"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="corp-body">
+                        <div class="corp-card" style="border-left-color: #0ea5e9;">
+                            <div class="corp-section-title">Informasi Program</div>
+                            <div class="corp-info-row"><div class="corp-info-label">Tajuk</div><div class="corp-info-val">: <span id="tpl-tajuk"></span></div></div>
+                            <div class="corp-info-row"><div class="corp-info-label">Tarikh/Masa</div><div class="corp-info-val">: <span id="tpl-tarikh"></span> | <span id="tpl-masa"></span></div></div>
+                            <div class="corp-info-row"><div class="corp-info-label">Tempat</div><div class="corp-info-val">: <span id="tpl-tempat"></span></div></div>
+                        </div>
+
+                        <div class="corp-grid">
+                            <div class="corp-card" id="wrap-obj">
+                                <div class="corp-section-title">Objektif</div>
+                                <div class="corp-text" id="tpl-objektif"></div>
+                            </div>
+                            <div class="corp-card" id="wrap-pen">
+                                <div class="corp-section-title">Pencapaian</div>
+                                <div class="corp-text" id="tpl-pencapaian"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="tpl-images-container" class="corp-images"></div>
+
+                        <div class="corp-grid">
+                            <div class="corp-card" id="wrap-imp">
+                                <div class="corp-section-title">Impak Program</div>
+                                <div class="corp-text" id="tpl-impak"></div>
+                            </div>
+                            <div class="corp-card" id="wrap-ref">
+                                <div class="corp-section-title">Tindak Susul & Refleksi</div>
+                                <div class="corp-text">
+                                    <div id="tpl-tindak"></div>
+                                    <div id="tpl-refleksi" style="font-style:italic; margin-top:5px;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="corp-footer" id="tpl-disediakan"></div>
+                    </div>
+                    <div class="tpl-footer-box" id="tpl-footer">
+                        <img src="" class="footer-logo" id="tpl-footer-logo">
+                        <div id="tpl-footer-text"></div>
+                    </div>
+                `;
+            } else if (currentTemplate === 'tpl-2') {
+                container.innerHTML = `
+                    <div class="comic-container">
+                        <div class="comic-header">
+                            ${headerLogoComponent}
+                            <div style="flex: 1; text-align: center; min-width: 0;">
+                                <h1 class="comic-title">ONE PAGE REPORT</h1>
+                                <div class="comic-unit" id="tpl-unit"></div>
+                            </div>
+                        </div>
+
+                        <div class="comic-grid">
+                            <div class="comic-col" style="flex: 1.5;">
+                                <div class="comic-panel">
+                                    <div class="comic-panel-title">INFO</div>
+                                    <div class="comic-text" style="margin-top: 5px;">
+                                        <div class="comic-info-item"><span class="comic-info-label">TAJUK</span> <span id="tpl-tajuk"></span></div>
+                                        <div class="comic-info-item"><span class="comic-info-label">MASA</span> <span id="tpl-tarikh"></span> ( <span id="tpl-masa"></span> )</div>
+                                        <div class="comic-info-item" style="border:none; margin:0;"><span class="comic-info-label">LOKASI</span> <span id="tpl-tempat"></span></div>
+                                    </div>
+                                </div>
+
+                                <div class="comic-panel" id="wrap-obj">
+                                    <div class="comic-panel-title yellow">OBJEKTIF UTAMA</div>
+                                    <div class="comic-text" id="tpl-objektif"></div>
+                                </div>
+
+                                <div class="comic-panel" id="wrap-pen">
+                                    <div class="comic-panel-title">HASIL & PENCAPAIAN</div>
+                                    <div class="comic-text" id="tpl-pencapaian"></div>
+                                </div>
+                                
+                                <div class="comic-panel" id="wrap-imp-ref">
+                                    <div class="comic-panel-title yellow">IMPAK & REFLEKSI</div>
+                                    <div class="comic-text">
+                                        <div id="tpl-impak" style="margin-bottom:8px;"></div>
+                                        <div id="tpl-tindak" style="margin-bottom:8px;"></div>
+                                        <div id="tpl-refleksi"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="comic-footer" id="tpl-disediakan"></div>
+                            </div>
+
+                            <div class="comic-col" style="flex: 1;">
+                                <div class="comic-panel" style="background:#000; border-color:#ef4444; height: 100%; display: flex; flex-direction: column;">
+                                    <div class="comic-panel-title" style="background:#ef4444;">GALERI</div>
+                                    <div id="tpl-images-container" class="comic-images"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tpl-footer-box" id="tpl-footer">
+                            <img src="" class="footer-logo" id="tpl-footer-logo">
+                            <div id="tpl-footer-text"></div>
+                        </div>
+                    </div>
+                `;
+            } else if (currentTemplate === 'tpl-3') {
+                container.innerHTML = `
+                    <div class="kreatif-container">
+                        <div class="kreatif-header">
+                            ${headerLogoComponent}
+                            <div style="flex: 1; text-align: center; min-width: 0;">
+                                <h1 class="header-title-k">ONE PAGE REPORT</h1>
+                                <div class="ribbon-wrapper"><div class="ribbon"><span id="tpl-tajuk"></span></div></div>
+                                <div><div class="yellow-pill">TAHUN 2026</div></div>
+                            </div>
+                        </div>
+
+                        <div class="green-bar" id="tpl-unit">UNIT SUMBER DAN TEKNOLOGI MAKLUMAT</div>
+
+                        <div class="main-grid">
+                            <div class="left-col">
+                                <div id="tpl-img-main" class="img-main-k"></div>
+                                
+                                <div class="info-box-k">
+                                    <div class="info-item-k"><div class="icon-k">📅</div><div class="info-text-k"><b>TARIKH</b><span id="tpl-tarikh"></span></div></div>
+                                    <div class="info-item-k"><div class="icon-k">⏰</div><div class="info-text-k"><b>MASA</b><span id="tpl-masa"></span></div></div>
+                                    <div class="info-item-k"><div class="icon-k">📍</div><div class="info-text-k"><b>TEMPAT</b><span id="tpl-tempat"></span></div></div>
+                                </div>
+
+                                <div class="sub-images-k" id="tpl-img-sub"></div>
+
+                                <div class="disediakan-k" id="tpl-disediakan"></div>
+                            </div>
+
+                            <div class="right-col">
+                                <div class="kreatif-card" id="wrap-obj">
+                                    <div class="kreatif-card-title">OBJEKTIF PROGRAM</div>
+                                    <div class="kreatif-content" id="tpl-objektif"></div>
+                                </div>
+                                
+                                <div class="kreatif-card" id="wrap-pen">
+                                    <div class="kreatif-card-title">AKTIVITI / PENCAPAIAN</div>
+                                    <div class="kreatif-content" id="tpl-pencapaian"></div>
+                                </div>
+                                
+                                <div class="kreatif-card" id="wrap-imp">
+                                    <div class="kreatif-card-title">IMPAK PROGRAM</div>
+                                    <div class="kreatif-content" id="tpl-impak"></div>
+                                </div>
+                                
+                                <div class="kreatif-card" id="wrap-ref">
+                                    <div class="kreatif-card-title">PENAMBAHBAIKAN / REFLEKSI</div>
+                                    <div class="kreatif-content">
+                                        <div id="tpl-tindak"></div>
+                                        <div id="tpl-refleksi" style="margin-top:5px; font-style:italic;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tpl-footer-box" id="tpl-footer">
+                            <img src="" class="footer-logo" id="tpl-footer-logo">
+                            <div id="tpl-footer-text"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            updateImagePreview();
+            updatePreview();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        function generatePDF() {
+            showToast("Memproses fail PDF Ultra HD... Sila tunggu.");
+            const element = document.getElementById('pdf-content');
+            const tajuk = document.getElementById('input-tajuk').value || 'Dokumen';
+            const filename = `OPR_${tajuk.replace(/\s+/g, '_')}.pdf`;
+
+            const originalTransform = element.style.transform;
+            element.style.transform = "scale(1)";
+            element.style.width = "210mm";
+            element.style.height = "296.5mm";
+            element.style.maxHeight = "296.5mm";
+            element.style.overflow = "hidden";
+
+            const opt = {
+                margin:       0,
+                filename:     filename,
+                image:        { type: 'jpeg', quality: 1.0 },
+                html2canvas:  { 
+                    scale: 4, // Skala 4 untuk kualiti cetakan Ultra HD (mengelakkan gambar pecah)
+                    useCORS: true, 
+                    logging: false,
+                    scrollY: 0,
+                    windowWidth: document.documentElement.offsetWidth,
+                    letterRendering: true
+                },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.style.transform = originalTransform;
+                element.style.width = "";
+                element.style.height = "";
+                element.style.maxHeight = "";
+                element.style.overflow = "";
+                showToast("Berjaya disimpan!");
+            }).catch(err => {
+                element.style.transform = originalTransform;
+                element.style.width = "";
+                element.style.height = "";
+                element.style.maxHeight = "";
+                element.style.overflow = "";
+                showToast("Ralat berlaku semasa menjana PDF.");
+                console.error(err);
+            });
+        }
+    </script>
+</body>
+</html>
